@@ -69,7 +69,6 @@ application-*.yml
 # Environment & Secrets
 ############################
 .env
-.env.*
 secrets/
 *.pem
 *.key
