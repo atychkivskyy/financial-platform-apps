@@ -25,5 +25,11 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Verify build
-        run: ./mvnw clean verify
+      - name: Build services
+        run: |
+          for dir in services/*; do
+            if [ -f "$dir/pom.xml" ]; then
+              echo "Building $dir"
+              (cd "$dir" && ./mvnw clean verify)
+            fi
+          done
