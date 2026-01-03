@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth
+    username: auth_user
+    password: auth_password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
