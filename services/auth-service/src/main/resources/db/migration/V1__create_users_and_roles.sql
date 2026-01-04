@@ -4,7 +4,7 @@ CREATE TABLE users
   email         VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   enabled       BOOLEAN      NOT NULL,
-  created_at    TIMESTAMPZ   NOT NULL
+  created_at    TIMESTAMP    NOT NULL
 );
 
 CREATE TABLE user_roles

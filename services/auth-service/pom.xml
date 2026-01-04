@@ -28,6 +28,7 @@
   </scm>
   <properties>
     <java.version>21</java.version>
+    <flyway.version>11.20.0</flyway.version>
   </properties>
   <dependencies>
     <dependency>
@@ -53,6 +54,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+      <version>42.7.8</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -95,6 +97,12 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-flyway</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+      <version>11.20.0</version>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
