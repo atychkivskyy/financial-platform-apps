@@ -53,7 +53,7 @@ class UserTest {
     @Test
     void shouldFailWhenCreatingUserWithNullPasswordHash() {
         assertThatThrownBy(() ->
-            User.create("email@example.com", null, Set.of(Role.USER))
+            User.create("user@example.com", null, Set.of(Role.USER))
         )
             .isInstanceOf(NullPointerException.class)
             .hasMessageContaining("passwordHash");
@@ -62,7 +62,7 @@ class UserTest {
     @Test
     void shouldFailWhenCreatingUserWithNullRoles() {
         assertThatThrownBy(() ->
-            User.create("email@example.com", "hashed-password", null)
+            User.create("user@example.com", "hashed-password", null)
         )
             .isInstanceOf(NullPointerException.class)
             .hasMessageContaining("roles");
