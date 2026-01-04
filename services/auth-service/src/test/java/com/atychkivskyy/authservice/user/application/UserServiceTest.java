@@ -5,6 +5,7 @@ import com.atychkivskyy.authservice.user.domain.User;
 import com.atychkivskyy.authservice.user.persistence.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 import java.util.Set;
@@ -14,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
+@ActiveProfiles("test")
 class UserServiceTest {
 
     private final UserRepository userRepository = mock(UserRepository.class);

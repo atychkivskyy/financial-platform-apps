@@ -1,11 +1,13 @@
 package com.atychkivskyy.authservice.user.domain;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
+@ActiveProfiles("test")
 class UserTest {
 
     @Test
