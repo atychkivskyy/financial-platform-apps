@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk-jammy AS build
+FROM eclipse-temurin:21-jdk-alpine AS build
 
 WORKDIR /app
 
@@ -12,9 +12,11 @@ COPY src src
 RUN ./mvnw -B -q -DskipTests package
 
 
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jre-alpine
 
-RUN useradd -r -u 1001 appuser
+RUN apk add --no-cache curl \
+    && addgroup -S appgroup \
+    && adduser -S appuser -G appgroup -u 1001
 
 WORKDIR /app
 
