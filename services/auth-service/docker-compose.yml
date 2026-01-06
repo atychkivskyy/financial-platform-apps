@@ -1,0 +1,58 @@
+name: auth-service
+
+services:
+  auth-service:
+    build: .
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: auth_db
+      DB_USERNAME: auth_user
+      DB_PASSWORD: auth_password
+      JWT_SECRET: 6bfd0a82c64c7c5a1b3f4d8e9a0b2c4d6e8f0a1b3c5d7e9f1a3b5c7d9e1f3a5b7c9d1e3f5a7b9c1d3e5f7a9b1c3d5e7f9
+      JWT_ISSUER: finplatform-auth-service
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - auth-service-network
+      - finplatform-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q0-", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
+
+  postgres:
+    image: postgres:18.1
+    container_name: auth-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+    volumes:
+      - auth-postgres-data:/var/lib/postgresql
+    networks:
+      - auth-service-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U auth_user -d auth_db" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  auth-postgres-data:
+
+networks:
+  auth-service-network:
+    driver: bridge
+  finplatform-network:
+    external: true
