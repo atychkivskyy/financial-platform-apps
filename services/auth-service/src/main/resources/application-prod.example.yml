@@ -1,0 +1,124 @@
+# =============================================================================
+# Auth Service - Production Profile
+# =============================================================================
+# Copy this file to application-prod.yml and configure via environment variables.
+# All sensitive values MUST come from environment variables or secrets manager.
+# =============================================================================
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # ---------------------------------------------------------------------------
+  # Production Database
+  # ---------------------------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      pool-name: AuthServiceHikariPool
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:10}
+      connection-timeout: 30000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      leak-detection-threshold: 30000
+      # Connection validation
+      connection-test-query: SELECT 1
+      validation-timeout: 5000
+
+  # ---------------------------------------------------------------------------
+  # JPA - Production settings
+  # ---------------------------------------------------------------------------
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+        jdbc:
+          batch_size: 50
+
+  # ---------------------------------------------------------------------------
+  # Flyway - Strict in production
+  # ---------------------------------------------------------------------------
+  flyway:
+    clean-disabled: true  # NEVER allow clean in production
+    validate-on-migrate: true
+
+  # ---------------------------------------------------------------------------
+  # Kafka - Production cluster
+  # ---------------------------------------------------------------------------
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      acks: all
+      retries: 10
+      properties:
+        retry.backoff.ms: 1000
+        delivery.timeout.ms: 120000
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
+  web:
+    error:
+      include-message: never
+      include-binding-errors: never
+      include-stacktrace: never
+      include-exception: false
+
+# =============================================================================
+# JWT - Production (via environment variables only)
+# =============================================================================
+jwt:
+  secret: ${JWT_SECRET}  # MUST be set via environment variable
+  access-token-expiration: 900000     # 15 minutes
+  refresh-token-expiration: 604800000 # 7 days
+  issuer: ${JWT_ISSUER:finplatform-auth-service}
+
+# =============================================================================
+# Server - Production settings
+# =============================================================================
+server:
+  port: ${SERVER_PORT:8081}
+  tomcat:
+    max-connections: 10000
+    accept-count: 200
+    threads:
+      max: 400
+      min-spare: 50
+    # Security headers
+    remote-ip:
+      remote-ip-header: X-Forwarded-For
+      protocol-header: X-Forwarded-Proto
+
+# =============================================================================
+# Actuator - Production security
+# =============================================================================
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8082}  # Separate port for internal access only
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: never  # Don't expose details publicly
+
+# =============================================================================
+# Logging - Production (structured JSON for log aggregation)
+# =============================================================================
+logging:
+  level:
+    root: WARN
+    com.atychkivskyy.authservice: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate: WARN
+    org.apache.kafka: WARN
+  pattern:
+    console: '{"timestamp":"%d{yyyy-MM-dd''T''HH:mm:ss.SSSXXX}","level":"%p","service":"${spring.application.name}","traceId":"%X{traceId:-}","spanId":"%X{spanId:-}","thread":"%t","logger":"%logger{40}","message":"%m"}%n'

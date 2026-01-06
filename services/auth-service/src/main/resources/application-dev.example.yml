@@ -1,0 +1,90 @@
+# =============================================================================
+# Auth Service - Development Profile
+# =============================================================================
+# Copy this file to application-dev.yml for local development.
+# =============================================================================
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  # ---------------------------------------------------------------------------
+  # Development Database (Local Docker or native PostgreSQL)
+  # ---------------------------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://localhost:5432/auth_db
+    username: auth_user
+    password: auth_password  # Only for local development!
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+
+  # ---------------------------------------------------------------------------
+  # JPA - More verbose for debugging
+  # ---------------------------------------------------------------------------
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: true
+
+  # ---------------------------------------------------------------------------
+  # Flyway
+  # ---------------------------------------------------------------------------
+  flyway:
+    clean-disabled: false  # Allow clean in dev (NEVER in prod!)
+
+  # ---------------------------------------------------------------------------
+  # Kafka (Local Docker)
+  # ---------------------------------------------------------------------------
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  # ---------------------------------------------------------------------------
+  # DevTools (Optional - if using spring-boot-devtools)
+  # ---------------------------------------------------------------------------
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+  web:
+    error:
+      include-message: always
+      include-binding-errors: always
+      include-exception: true
+      include-stacktrace: on_param
+
+# =============================================================================
+# JWT - Development keys (NOT for production!)
+# =============================================================================
+jwt:
+  # This is a development-only secret. Generate a new one for production!
+  secret: dev-only-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm-do-not-use-in-production
+  access-token-expiration: 3600000   # 1 hour (longer for dev convenience)
+  refresh-token-expiration: 86400000  # 1 day
+  issuer: finplatform-auth-service-dev
+
+# =============================================================================
+# Server
+# =============================================================================
+server:
+  port: 8081
+
+# =============================================================================
+# Logging - Verbose for development
+# =============================================================================
+logging:
+  level:
+    root: INFO
+    com.atychkivskyy.authservice: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.transaction: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE  # Show SQL parameter values
+    org.flywaydb: DEBUG
+  pattern:
+    console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx"

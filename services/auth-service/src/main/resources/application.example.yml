@@ -1,0 +1,159 @@
+# =============================================================================
+# Auth Service - Base Configuration
+# =============================================================================
+# Copy this file to application.yml and fill in the actual values.
+# NEVER commit application.yml with real secrets to version control.
+# =============================================================================
+
+spring:
+  application:
+    name: auth-service
+
+  # ---------------------------------------------------------------------------
+  # Database Configuration
+  # ---------------------------------------------------------------------------
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: AuthServiceHikariPool
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:10}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+
+  # ---------------------------------------------------------------------------
+  # JPA / Hibernate Configuration
+  # ---------------------------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+
+  # ---------------------------------------------------------------------------
+  # Flyway Database Migration
+  # ---------------------------------------------------------------------------
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  # ---------------------------------------------------------------------------
+  # Kafka Configuration
+  # ---------------------------------------------------------------------------
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+    properties:
+      security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+
+# =============================================================================
+# JWT Configuration
+# =============================================================================
+jwt:
+  secret: ${JWT_SECRET}  # Must be at least 256 bits (64 hex characters)
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION:900000}       # 15 minutes
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION:604800000}  # 7 days
+  issuer: ${JWT_ISSUER:finplatform-auth-service}
+
+# =============================================================================
+# Server Configuration
+# =============================================================================
+server:
+  port: ${SERVER_PORT:8081}
+  shutdown: graceful
+  tomcat:
+    connection-timeout: 5s
+    max-connections: 8192
+    accept-count: 100
+    threads:
+      max: 200
+      min-spare: 10
+
+spring.lifecycle:
+  timeout-per-shutdown-phase: 30s
+
+# =============================================================================
+# Actuator / Observability
+# =============================================================================
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}  # Can use separate port for internal access
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: db,diskSpace
+        liveness:
+          include: ping
+  health:
+    db:
+      enabled: true
+    diskspace:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${ENVIRONMENT:unknown}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.90, 0.95, 0.99
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+logging:
+  level:
+    root: INFO
+    com.atychkivskyy.authservice: INFO
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    org.flywaydb: INFO
+    org.apache.kafka: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} [%thread] [%X{traceId:-},%X{spanId:-}] %-5level %logger{40} - %msg%n"
+  file:
+    name: ${LOG_PATH:./logs}/${spring.application.name}.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+      total-size-cap: 1GB
